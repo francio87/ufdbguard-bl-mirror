@@ -1,3 +1,5 @@
+[![Update Blacklists](https://github.com/francio87/ufdbguard-bl-mirror/actions/workflows/blacklists-update.yml/badge.svg)](https://github.com/francio87/ufdbguard-bl-mirror/actions/workflows/blacklists-update.yml)
+
 # :flying_saucer: ufdbGuard blacklist mirror :flying_saucer:
 
 ### Simple :robot: Github Workflow :robot: that sync `ufdbGuard` blacklists
