@@ -1,0 +1,57 @@
+name: Update Blacklists
+
+on: 
+  schedule:
+    - cron:  "* */4 * * *"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Download Toulouse Blacklists
+        run: "curl -o blacklists.tar.gz -m 120 http://dsi.ut-capitole.fr/blacklists/download/blacklists.tar.gz"
+        # run: "curl -o blacklists.tar.gz -m 120 http://nsec.franceschelli.eu/blacklists.tar.gz"
+        
+      - name: Download Toulouse MD5 file
+        run: "curl -o MD5SUM.LST -m 120 http://dsi.ut-capitole.fr/blacklists/download/MD5SUM.LST"
+        # run: "curl -o MD5SUM.LST -m 120 http://nsec.franceschelli.eu/MD5SUM.LST"
+
+      - name: Check if MD5 Match
+        run: if md5sum --status --ignore-missing -c MD5SUM.LST; then echo "MD5 Match, we can continue!"; else exit 1; fi
+
+      - name: Get Datetime
+        id: get-date-time
+        run: echo "DT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+#      - name: Import GPG key
+#        uses: crazy-max/ghaction-import-gpg@v5
+#        with:
+#          gpg_private_key: ${{ secrets.GPGKEY }}
+#          passphrase: ${{ secrets.GPGPASSWORD }}
+#          git_user_signingkey: true
+#          git_commit_gpgsign: true
+
+#      - name: Sign commit and push changes
+#        run: |
+#          git add .
+#          git commit -S -m "[Bot] Update Blacklist (${{ steps.get-date-time.outputs.DT }})"
+#          git push
+
+      - name: Commit to repo
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "[Bot] Update Blacklist (${{ steps.get-date-time.outputs.DT }})"
+          commit_user_name: "@francio87"
+          commit_user_email: davide@franceschelli.eu
+          commit_options: '--no-verify --signoff'
+          commit_author: francio87 <davide@franceschelli.eu>
