@@ -8,7 +8,7 @@ on:
 
 jobs:
   check_update:
-    name: Check Update
+    name: Check Updates
     runs-on: ubuntu-latest
     outputs:
       status: ${{ steps.check-need-update.outputs.NEEDUPDATE }}
