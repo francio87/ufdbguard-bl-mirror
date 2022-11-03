@@ -18,11 +18,11 @@ jobs:
       - name: Check OLD MD5 file
         id: get-md5-old
         run: |
-             if test -f "MD5SUM.LST"; then
-                 #file exists
-                 echo "MD5OLD=$(grep blacklists.tar.gz MD5SUM.LST | awk {' print $1 '})" >> $GITHUB_OUTPUT
-                 else
-                 echo "MD5OLD=0" >> $GITHUB_OUTPUT
+          if test -f "MD5SUM.LST"; then
+            #file exists
+            echo "MD5OLD=$(grep blacklists.tar.gz MD5SUM.LST | awk {' print $1 '})" >> $GITHUB_OUTPUT
+          else
+            echo "MD5OLD=0" >> $GITHUB_OUTPUT
              fi
 
 #      - name: Check old MD5 file existence
