@@ -48,7 +48,7 @@ jobs:
       - uses: actions/checkout@v3
       
       - name: print var job
-        run: ${{needs.check_update.outputs.status}}
+        run: echo ${{needs.check_update.outputs.status}}
 
       - name: Download Toulouse Blacklists
         run: "curl -o blacklists.tar.gz -m 120 http://dsi.ut-capitole.fr/blacklists/download/blacklists.tar.gz"
