@@ -15,10 +15,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Get OLD MD5
+      - name: Check old MD5 file existence
+        id: check_files
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "MD5SUM.LST"
+
+      - name: OLD MD5File exists
+        if: steps.check_files.outputs.files_exists == 'true'
         id: get-md5-old
+        # Only runs if all of the files exists
         run: echo "MD5OLD=$(grep blacklists.tar.gz MD5SUM.LST | awk {' print $1 '})" >> $GITHUB_OUTPUT
-        continue-on-error: true
+
+      - name: OLD MD5File NOT EXIST
+        if: steps.check_files.outputs.files_exists == 'false'
+        id: get-md5-old
+        #run only if NOT exist
+        run: echo "MD5OLD=0" >> $GITHUB_OUTPUT
 
       - name: GET NEW MD5 
         id: get-md5-new
@@ -39,7 +52,7 @@ jobs:
         run: echo ${{ steps.check-need-update.outputs.need-update}}
 
   update:
-    if: needs.check_update.outputs.status == 'true'
+    if: needs.check_update.outputs.status != 'false'
     needs: check_update
     name: Execute Update
     runs-on: ubuntu-latest
