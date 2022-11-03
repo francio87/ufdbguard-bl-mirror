@@ -10,6 +10,7 @@ jobs:
   check_update:
     name: Check Updates
     runs-on: ubuntu-latest
+    using: "composite"
     outputs:
       status: ${{ steps.check-need-update.outputs.NEEDUPDATE }}
     steps:
