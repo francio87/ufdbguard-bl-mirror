@@ -45,7 +45,7 @@ jobs:
 
       - name: GET NEW MD5 
         id: get-md5-new
-        run: echo "MD5NEW=$(curl -m 120 http://dsi.ut-capitole.fr/blacklists/download/MD5SUM.LST |grep blacklists.tar.gz | awk {' print $1 '})" >> $GITHUB_OUTPUT
+        run: echo "MD5NEW=$(curl -s -m 120 http://dsi.ut-capitole.fr/blacklists/download/MD5SUM.LST |grep blacklists.tar.gz | awk {' print $1 '})" >> $GITHUB_OUTPUT
 
       - name: print old md5
         run: echo "${{ steps.get-md5-old.outputs.MD5OLD }}"
