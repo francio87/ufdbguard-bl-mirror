@@ -15,23 +15,33 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Check old MD5 file existence
-        id: check_files
-        uses: andstor/file-existence-action@v2
-        with:
-          files: "MD5SUM.LST"
-
-      - name: OLD MD5File exists
-        if: steps.check_files.outputs.files_exists == 'true'
+      - name: Check OLD MD5 file
         id: get-md5-old
-        # Only runs if all of the files exists
-        run: echo "MD5OLD=$(grep blacklists.tar.gz MD5SUM.LST | awk {' print $1 '})" >> $GITHUB_OUTPUT
+        run: |
+             if test -f "MD5SUM.LST"; then
+                 #file exists
+                 echo "MD5OLD=$(grep blacklists.tar.gz MD5SUM.LST | awk {' print $1 '})" >> $GITHUB_OUTPUT
+                 else
+                 echo "MD5OLD=0" >> $GITHUB_OUTPUT
+             fi
 
-      - name: OLD MD5File NOT EXIST
-        if: steps.check_files.outputs.files_exists == 'false'
-        id: get-md5-old
-        #run only if NOT exist
-        run: echo "MD5OLD=0" >> $GITHUB_OUTPUT
+#      - name: Check old MD5 file existence
+#        id: check_files
+#        uses: andstor/file-existence-action@v2
+#        with:
+#          files: "MD5SUM.LST"
+
+#      - name: OLD MD5File exists
+#        if: steps.check_files.outputs.files_exists == 'true'
+#        id: get-md5-old
+#        # Only runs if all of the files exists
+#        run: echo "MD5OLD=$(grep blacklists.tar.gz MD5SUM.LST | awk {' print $1 '})" >> $GITHUB_OUTPUT#
+
+#      - name: OLD MD5File NOT EXIST
+#        if: steps.check_files.outputs.files_exists == 'false'
+#        id: get-md5-old
+#        #run only if NOT exist
+#        run: echo "MD5OLD=0" >> $GITHUB_OUTPUT
 
       - name: GET NEW MD5 
         id: get-md5-new
@@ -45,14 +55,14 @@ jobs:
 
       - name: Check if vars match
         id: check-need-update
-        if: ${{steps.get-md5-new.outputs.MD5NEW == steps.get-md5-old.outputs.MD5OLD}}
-        run: echo "need-update=${{ false }} >> $GITHUB_OUTPUT
+        if: ${{steps.get-md5-new.outputs.MD5NEW != steps.get-md5-old.outputs.MD5OLD}}
+        run: echo "need-update=${{ true }} >> $GITHUB_OUTPUT
 
       - name: print var
         run: echo ${{ steps.check-need-update.outputs.need-update}}
 
   update:
-    if: needs.check_update.outputs.status != 'false'
+    if: needs.check_update.outputs.status == 'true'
     needs: check_update
     name: Execute Update
     runs-on: ubuntu-latest
