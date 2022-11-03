@@ -33,13 +33,13 @@ jobs:
       - name: Check if vars match
         id: check-need-update
         if: ${{steps.get-md5-new.outputs.MD5NEW == steps.get-md5-old.outputs.MD5OLD}}
-        run: echo "NEEDUPDATE=true" >> $GITHUB_OUTPUT
+        run: echo "NEEDUPDATE=0" >> $GITHUB_OUTPUT
 
       - name: print var
         run: echo ${{ steps.check-need-update.outputs.NEEDUPDATE }}
 
   update:
-    if: ${{needs.check_update.outputs.status}} != true
+    if: ${{needs.check_update.outputs.status}} != 0
     needs: check_update
     name: Execute Update
     runs-on: ubuntu-latest
