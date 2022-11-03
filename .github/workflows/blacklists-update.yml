@@ -56,7 +56,7 @@ jobs:
       - name: Check if vars match
         id: check-need-update
         if: ${{steps.get-md5-new.outputs.MD5NEW != steps.get-md5-old.outputs.MD5OLD}}
-        run: echo "need-update=${{ true }} >> $GITHUB_OUTPUT
+        run: echo "need-update=${{ true }}" >> $GITHUB_OUTPUT
 
       - name: print var
         run: echo ${{ steps.check-need-update.outputs.need-update}}
