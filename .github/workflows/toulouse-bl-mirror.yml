@@ -69,10 +69,13 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
 
+      - name: List keys
+        run: gpg -K
+
       - name: Sign commit and push changes
         run: |
           git add .
-          git commit -S -m "[Bot] Update Blacklist (${{ steps.get-date-time.outputs.DT }})"
+          GIT_TRACE=1 git commit -S -m "[Bot] Update Blacklist (${{ steps.get-date-time.outputs.DT }})"
           git push
 
 #      - name: Commit to repo
