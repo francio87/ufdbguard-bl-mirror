@@ -1,4 +1,4 @@
-name: Blacklist Updater
+name: Toulouse Blacklist Mirror
 
 on: 
   schedule:
@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Check OLD MD5 file
+      - name: Get OLD MD5
         id: get-md5-old
         run: |
           if test -f "MD5SUM.LST"; then
@@ -24,11 +24,11 @@ jobs:
             echo "MD5OLD=0" >> $GITHUB_OUTPUT
           fi
 
-      - name: GET NEW MD5 
+      - name: Get NEW MD5 
         id: get-md5-new
         run: echo "MD5NEW=$(curl -m 120 http://dsi.ut-capitole.fr/blacklists/download/MD5SUM.LST |grep blacklists.tar.gz | awk {' print $1 '})" >> $GITHUB_OUTPUT
 
-      - name: Check if vars match
+      - name: Check if update is needed
         id: check-need-update
         if: ${{steps.get-md5-new.outputs.MD5NEW != steps.get-md5-old.outputs.MD5OLD}}
         run: echo "need-update=${{ true }}" >> $GITHUB_OUTPUT
@@ -42,9 +42,6 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      - name: print var job
-        run: echo ${{needs.check_update.outputs.status}}
-
       - name: Download Toulouse Blacklists
         run: "curl -o blacklists.tar.gz -m 120 http://dsi.ut-capitole.fr/blacklists/download/blacklists.tar.gz"
 
@@ -54,13 +51,13 @@ jobs:
       - name: Check if MD5 of the new file match
         run: |
           if md5sum --status --ignore-missing -c MD5SUM.LST; then
-            echo "MD5 Match";
+            echo "MD5 Match!";
           else
             echo "MD5 does NOT match, download corrupted ?"
             exit 1;
           fi
 
-      - name: Get Datetime
+      - name: Get date and time
         id: get-date-time
         run: echo "DT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
 
@@ -68,7 +65,3 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "[Bot] Update Blacklist (${{ steps.get-date-time.outputs.DT }})"
-          commit_user_name: "@francio87"
-          commit_user_email: davide@franceschelli.eu
-          commit_options: '--no-verify --signoff'
-          commit_author: francio87 <davide@franceschelli.eu>
