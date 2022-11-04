@@ -1,0 +1,67 @@
+name: Toulouse Blacklist Mirror
+
+on: 
+  schedule:
+    - cron:  "35 */12 * * *"
+
+  workflow_dispatch:
+
+jobs:
+  check_update:
+    name: Check Updates
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.check-need-update.outputs.need-update }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get OLD MD5
+        id: get-md5-old
+        run: |
+          if test -f "MD5SUM.LST"; then
+            echo "MD5OLD=$(grep blacklists.tar.gz MD5SUM.LST | awk {' print $1 '})" >> $GITHUB_OUTPUT
+          else
+            echo "MD5OLD=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get NEW MD5 
+        id: get-md5-new
+        run: echo "MD5NEW=$(curl -m 120 http://dsi.ut-capitole.fr/blacklists/download/MD5SUM.LST |grep blacklists.tar.gz | awk {' print $1 '})" >> $GITHUB_OUTPUT
+
+      - name: Check if update is needed
+        id: check-need-update
+        if: ${{steps.get-md5-new.outputs.MD5NEW != steps.get-md5-old.outputs.MD5OLD}}
+        run: echo "need-update=${{ true }}" >> $GITHUB_OUTPUT
+
+  update:
+    if: ${{ needs.check_update.outputs.status == 'true' }}
+    needs: check_update
+    name: Execute Update
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v3
+
+      - name: Download Toulouse Blacklists
+        run: "curl -o blacklists.tar.gz -m 120 http://dsi.ut-capitole.fr/blacklists/download/blacklists.tar.gz"
+
+      - name: Download Toulouse MD5 file
+        run: "curl -o MD5SUM.LST -m 120 http://dsi.ut-capitole.fr/blacklists/download/MD5SUM.LST"
+
+      - name: Check if MD5 of the new file match
+        run: |
+          if md5sum --status --ignore-missing -c MD5SUM.LST; then
+            echo "MD5 Match!";
+          else
+            echo "MD5 does NOT match, download corrupted ?"
+            exit 1;
+          fi
+
+      - name: Get date and time
+        id: get-date-time
+        run: echo "DT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+      - name: Commit to repo
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "[Bot] Update Blacklist (${{ steps.get-date-time.outputs.DT }})"
